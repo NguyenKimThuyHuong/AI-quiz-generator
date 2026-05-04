@@ -69,9 +69,13 @@ if uploaded_file is not None:
                     st.code(text) # In ra text để debug nếu lỗi nặng hơn
                 
             except Exception as e:
-                st.error("🚨 Đã xảy ra lỗi trong quá trình kết nối với AI (có thể do mạng hoặc API). Chi tiết lỗi thực sự là:")
-                # TỐI ƯU HÓA: In biến lỗi 'e' thay vì 'response.text'
-                st.code(str(e))
+                error_msg = str(e)
+                # Bắt lỗi 429 Quota Exceeded
+                if "429" in error_msg or "quota" in error_msg.lower():
+                    st.warning("⏳ Hệ thống AI đang tạm thời quá tải do vượt giới hạn sử dụng miễn phí. Bạn vui lòng đợi khoảng 1 phút rồi nhấn nút thử lại nhé!")
+                else:
+                    st.error("🚨 Đã xảy ra lỗi trong quá trình kết nối với AI. Chi tiết:")
+                    st.code(error_msg)
 
 # --- BƯỚC 3, 4, 5: ĐÁNH GIÁ VÀ PHẢN HỒI ---
 if 'quiz_data' in st.session_state:

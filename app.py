@@ -25,17 +25,11 @@ st.header("1. Tải tài liệu môn học (PDF)")
 uploaded_file = st.file_uploader("Chọn file giáo trình, bài giảng của bạn:", type=["pdf"])
 
 if uploaded_file is not None:
-    # TỐI ƯU HÓA: Chỉ đọc file nếu là file mới
-    if 'current_file' not in st.session_state or st.session_state['current_file'] != uploaded_file.name:
-        with st.spinner("Đang trích xuất dữ liệu, vui lòng đợi..."):
-            document_text = extract_text_from_pdf(uploaded_file)
-            st.session_state['source_text'] = document_text[:5000] 
-            st.session_state['current_file'] = uploaded_file.name
-            
-            # Reset lại bài test cũ nếu người dùng up file mới
-            if 'quiz_data' in st.session_state:
-                del st.session_state['quiz_data']
-                
+    with st.spinner("Đang đọc file PDF..."):
+        document_text = extract_text_from_pdf(uploaded_file)
+        short_text = document_text[:5000] 
+        st.session_state['source_text'] = short_text 
+    
     st.success("Đọc file thành công! Bạn có thể tạo bài kiểm tra ngay.")
     
     if st.button("Tạo bài kiểm tra"):
@@ -51,31 +45,26 @@ if uploaded_file is not None:
                 "explanation": "Giải thích ngắn gọn tại sao chọn đáp án này"
               }}
             ]
-            Văn bản: {st.session_state['source_text']}"""
+            Văn bản: {short_text}"""
             
             try:
+                # Kiểm tra xem PDF có đọc được chữ không
+                if not short_text.strip():
+                    st.error("🚨 Không thể trích xuất chữ từ file PDF này (có thể đây là file scan/hình ảnh). Bạn hãy thử một file giáo trình dạng text nhé!")
+                    st.stop() # Dừng chạy code bên dưới
+
                 response = model.generate_content(prompt_step2)
+                raw_text = response.text.replace('```json', '').replace('```', '').strip()
                 
-                # Thủ thuật Dev: Chỉ lấy phần text từ dấu [ đầu tiên đến dấu ] cuối cùng
-                text = response.text
-                start_idx = text.find('[')
-                end_idx = text.rfind(']') + 1
+                # Cố gắng bóc tách JSON
+                st.session_state['quiz_data'] = json.loads(raw_text)
                 
-                if start_idx != -1 and end_idx != 0:
-                    clean_json = text[start_idx:end_idx]
-                    st.session_state['quiz_data'] = json.loads(clean_json)
-                else:
-                    st.error("🚨 AI không tạo ra mảng câu hỏi nào.")
-                    st.code(text) # In ra text để debug nếu lỗi nặng hơn
-                
+            except json.decoder.JSONDecodeError:
+                # Bắt lỗi chuẩn JSON
+                st.error("🚨 AI không trả về đúng định dạng JSON. Dưới đây là những gì AI thực sự nói (chế độ Debug):")
+                st.code(response.text) # In ra text gốc để bạn xem
             except Exception as e:
-                error_msg = str(e)
-                # Bắt lỗi 429 Quota Exceeded
-                if "429" in error_msg or "quota" in error_msg.lower():
-                    st.warning("⏳ Hệ thống AI đang tạm thời quá tải do vượt giới hạn sử dụng miễn phí. Bạn vui lòng đợi khoảng 1 phút rồi nhấn nút thử lại nhé!")
-                else:
-                    st.error("🚨 Đã xảy ra lỗi trong quá trình kết nối với AI. Chi tiết:")
-                    st.code(error_msg)
+                st.error(f"🚨 Lỗi hệ thống khác: {e}")
 
 # --- BƯỚC 3, 4, 5: ĐÁNH GIÁ VÀ PHẢN HỒI ---
 if 'quiz_data' in st.session_state:

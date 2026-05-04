@@ -1,6 +1,6 @@
 import google.generativeai as genai
 
-genai.configure(api_key="AIzaSyAapV_7fajRmM7RZWjZaFM_UcDHlgFQ-O4")
+genai.configure(api_key="AIzaSyCN6MtOlNhoat9tUNQ96hqtLPVpBNultHs")
 
 print("Danh sách các model bạn được phép dùng:")
 for m in genai.list_models():

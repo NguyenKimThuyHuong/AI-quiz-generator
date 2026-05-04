@@ -51,7 +51,7 @@ if uploaded_file is not None:
                 "explanation": "Giải thích ngắn gọn tại sao chọn đáp án này"
               }}
             ]
-            Văn bản: {short_text}"""
+            Văn bản: {st.session_state['source_text']}"""
             
             try:
                 response = model.generate_content(prompt_step2)

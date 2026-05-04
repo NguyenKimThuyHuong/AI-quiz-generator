@@ -48,23 +48,23 @@ if uploaded_file is not None:
             Văn bản: {short_text}"""
             
             try:
-                # Kiểm tra xem PDF có đọc được chữ không
-                if not short_text.strip():
-                    st.error("🚨 Không thể trích xuất chữ từ file PDF này (có thể đây là file scan/hình ảnh). Bạn hãy thử một file giáo trình dạng text nhé!")
-                    st.stop() # Dừng chạy code bên dưới
-
                 response = model.generate_content(prompt_step2)
-                raw_text = response.text.replace('```json', '').replace('```', '').strip()
                 
-                # Cố gắng bóc tách JSON
-                st.session_state['quiz_data'] = json.loads(raw_text)
+                # Thủ thuật Dev: Chỉ lấy phần text từ dấu [ đầu tiên đến dấu ] cuối cùng
+                text = response.text
+                start_idx = text.find('[')
+                end_idx = text.rfind(']') + 1
                 
-            except json.decoder.JSONDecodeError:
-                # Bắt lỗi chuẩn JSON
-                st.error("🚨 AI không trả về đúng định dạng JSON. Dưới đây là những gì AI thực sự nói (chế độ Debug):")
-                st.code(response.text) # In ra text gốc để bạn xem
+                if start_idx != -1 and end_idx != 0:
+                    clean_json = text[start_idx:end_idx]
+                    st.session_state['quiz_data'] = json.loads(clean_json)
+                else:
+                    st.error("🚨 AI không tạo ra mảng câu hỏi nào.")
+                    st.code(text) # In ra text để debug nếu lỗi nặng hơn
+                
             except Exception as e:
-                st.error(f"🚨 Lỗi hệ thống khác: {e}")
+                st.error("🚨 Đã xảy ra lỗi khi bóc tách dữ liệu JSON từ AI. Chi tiết:")
+                st.code(response.text)
 
 # --- BƯỚC 3, 4, 5: ĐÁNH GIÁ VÀ PHẢN HỒI ---
 if 'quiz_data' in st.session_state:

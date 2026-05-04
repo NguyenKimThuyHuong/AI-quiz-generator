@@ -69,8 +69,9 @@ if uploaded_file is not None:
                     st.code(text) # In ra text để debug nếu lỗi nặng hơn
                 
             except Exception as e:
-                st.error("🚨 Đã xảy ra lỗi khi bóc tách dữ liệu JSON từ AI. Chi tiết:")
-                st.code(response.text)
+                st.error("🚨 Đã xảy ra lỗi trong quá trình kết nối với AI (có thể do mạng hoặc API). Chi tiết lỗi thực sự là:")
+                # TỐI ƯU HÓA: In biến lỗi 'e' thay vì 'response.text'
+                st.code(str(e))
 
 # --- BƯỚC 3, 4, 5: ĐÁNH GIÁ VÀ PHẢN HỒI ---
 if 'quiz_data' in st.session_state:

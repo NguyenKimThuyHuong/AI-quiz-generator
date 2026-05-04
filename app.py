@@ -25,11 +25,17 @@ st.header("1. Tải tài liệu môn học (PDF)")
 uploaded_file = st.file_uploader("Chọn file giáo trình, bài giảng của bạn:", type=["pdf"])
 
 if uploaded_file is not None:
-    with st.spinner("Đang đọc file PDF..."):
-        document_text = extract_text_from_pdf(uploaded_file)
-        short_text = document_text[:5000] 
-        st.session_state['source_text'] = short_text 
-    
+    # TỐI ƯU HÓA: Chỉ đọc file nếu là file mới
+    if 'current_file' not in st.session_state or st.session_state['current_file'] != uploaded_file.name:
+        with st.spinner("Đang trích xuất dữ liệu, vui lòng đợi..."):
+            document_text = extract_text_from_pdf(uploaded_file)
+            st.session_state['source_text'] = document_text[:5000] 
+            st.session_state['current_file'] = uploaded_file.name
+            
+            # Reset lại bài test cũ nếu người dùng up file mới
+            if 'quiz_data' in st.session_state:
+                del st.session_state['quiz_data']
+                
     st.success("Đọc file thành công! Bạn có thể tạo bài kiểm tra ngay.")
     
     if st.button("Tạo bài kiểm tra"):

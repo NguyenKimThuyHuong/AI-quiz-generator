@@ -69,13 +69,8 @@ if uploaded_file is not None:
                     st.code(text) # In ra text để debug nếu lỗi nặng hơn
                 
             except Exception as e:
-                error_msg = str(e)
-                # Bắt lỗi 429 Quota Exceeded
-                if "429" in error_msg or "quota" in error_msg.lower():
-                    st.warning("⏳ Hệ thống AI đang tạm thời quá tải do vượt giới hạn sử dụng miễn phí. Bạn vui lòng đợi khoảng 1 phút rồi nhấn nút thử lại nhé!")
-                else:
-                    st.error("🚨 Đã xảy ra lỗi trong quá trình kết nối với AI. Chi tiết:")
-                    st.code(error_msg)
+                st.error("🚨 Lỗi gốc từ Google:")
+                st.code(str(e))
 
 # --- BƯỚC 3, 4, 5: ĐÁNH GIÁ VÀ PHẢN HỒI ---
 if 'quiz_data' in st.session_state:
@@ -122,4 +117,5 @@ if 'quiz_data' in st.session_state:
                     st.markdown("🤖🛠 Lộ Trình Học Bù Dành Riêng Cho Bạn")
                     st.write(feedback_response.text)
                 except Exception as e:
-                    st.error("Không thể tải lộ trình học bù lúc này. Bạn hãy ôn lại tài liệu nhé.")
+                    st.error("🚨 Lỗi gốc từ Google (Bước 4):")
+                    st.code(str(e))

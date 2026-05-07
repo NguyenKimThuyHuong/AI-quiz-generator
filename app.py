@@ -8,7 +8,7 @@ import json
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # Sử dụng model mạnh và nhanh như yêu cầu
-model = genai.GenerativeModel('gemini-2.0-flash-lite')
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 def extract_text_from_pdf(file):
     reader = PyPDF2.PdfReader(file)
